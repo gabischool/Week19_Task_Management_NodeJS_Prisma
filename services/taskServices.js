@@ -11,14 +11,18 @@ export async function getAllTasks() {
 // Get task by ID
 export async function getTaskById(id) {
   try {
-
     // TODO: Check if task exists
+    const task = await prisma.task.findUnique({
+      where: { id },
+    });
 
     // TODO: If not, throw an error
+    if (!task) {
+      throw new Error("Task not found");
+    }
 
     // TODO: If it does, return the task
-    
-
+    return task;
   } catch (error) {
     throw new Error(`Error retrieving task: ${error.message}`);
   }
@@ -31,10 +35,31 @@ export async function createTask(taskData) {
     const status =
       taskData.status === "in-progress" ? "in_progress" : taskData.status;
 
-
-      // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data in "taskData.subtasks". Return the created task and it's subtasks using the include option.
-    
-
+    // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data in "taskData.subtasks". Return the created task and it's subtasks using the include option.
+    const { title, description, priority, subtasks } = taskData;
+    if (!title || !description) {
+      throw new Error("Missing required fields");
+    }
+    const newTask = await prisma.task.create({
+      data: {
+        title,
+        description,
+        status,
+        priority,
+        subtasks: {
+          create:
+            subtasks?.map((subtask) => ({
+              title: subtask.title,
+              description: subtask.description,
+              completed: subtask.completed || false,
+            })) || [],
+        },
+      },
+      include: {
+        subtasks: true,
+      },
+    });
+    return newTask;
   } catch (error) {
     throw new Error(`Error creating task: ${error.message}`);
   }
