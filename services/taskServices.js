@@ -8,16 +8,22 @@ export async function getAllTasks() {
   });
 }
 
+
+
 // Get task by ID
 export async function getTaskById(id) {
   try {
+     // TODO: Check if task exists
+     const student = await prisma.student.findUnique({
+      where:{id} ,
+     })
+      // TODO: If not, throw an error
 
-    // TODO: Check if task exists
-
-    // TODO: If not, throw an error
-
-    // TODO: If it does, return the task
-    
+      if (!student){
+        throw new Error('student not found')
+      }
+      // TODO: If it does, return the task
+      return student;
 
   } catch (error) {
     throw new Error(`Error retrieving task: ${error.message}`);
@@ -32,8 +38,27 @@ export async function createTask(taskData) {
       taskData.status === "in-progress" ? "in_progress" : taskData.status;
 
 
-      // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data in "taskData.subtasks". Return the created task and it's subtasks using the include option.
-    
+      // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data 
+      // in "taskData.subtasks". Return the created task and it's subtasks using the include option.
+       const createdTask = await prisma.task.create({
+      data: {
+        ...taskData,
+        status: status,
+
+        subtasks: {
+          createMany: {
+            data: taskData.subtasks.map(subtask => ({
+              ...subtask,
+
+              completed: subtask.completed ?? false
+            }))
+          }
+        }
+      },
+      include: {
+        subtasks: true
+      }
+    })
 
   } catch (error) {
     throw new Error(`Error creating task: ${error.message}`);
