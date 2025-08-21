@@ -5,6 +5,8 @@ import {
   createTask,
   updateTask,
   deleteTask,
+  createSubtask,
+  updateSubtask,
 } from "../services/taskServices.js";
 
 const router = express.Router();
@@ -64,7 +66,7 @@ router.post("/tasks", async (req, res) => {
   try {
     const taskData = req.body;
     const newTask = await createTask(taskData);
-
+    const createSubtask = await createSubtask(newTask.id, taskData.subtasks)
     res.status(201).json({
       success: true,
       data: newTask,
@@ -83,6 +85,7 @@ router.post("/tasks", async (req, res) => {
 router.put("/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    console.log
     const updateData = req.body;
     const updatedTask = await updateTask(id, updateData);
 

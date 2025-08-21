@@ -11,14 +11,16 @@ export async function getAllTasks() {
 // Get task by ID
 export async function getTaskById(id) {
   try {
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: { subtasks: true },
+    });
 
-    // TODO: Check if task exists
+    if (!task) {
+      throw new Error(`Task with ID ${id} not found`);
+    }
 
-    // TODO: If not, throw an error
-
-    // TODO: If it does, return the task
-    
-
+    return task;
   } catch (error) {
     throw new Error(`Error retrieving task: ${error.message}`);
   }
@@ -29,12 +31,29 @@ export async function createTask(taskData) {
   try {
     // Convert status from kebab-case to snake_case for Prisma enum
     const status =
-      taskData.status === "in-progress" ? "in_progress" : taskData.status;
+      taskData.status === 'in-progress' ? 'in_progress' : taskData.status;
 
+    // Keep subtasks separate from top-level fields
+    const { subtasks = [], ...taskFields } = taskData;
 
-      // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data in "taskData.subtasks". Return the created task and it's subtasks using the include option.
-    
+    const createdTask = await prisma.task.create({
+      data: {
+        ...taskFields,           // title, description, priority, dueDate, assignedTo, etc.
+        status,                  // override with enum-friendly value
+        subtasks: subtasks.length
+          ? {
+              create: subtasks.map(({ title, description, completed = false }) => ({
+                title,
+                description,
+                completed,
+              })),
+            }
+          : undefined,           // avoid sending empty create
+      },
+      include: { subtasks: true }, // return task and its subtasks
+    });
 
+    return createdTask;
   } catch (error) {
     throw new Error(`Error creating task: ${error.message}`);
   }
