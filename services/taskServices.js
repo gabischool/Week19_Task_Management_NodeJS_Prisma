@@ -17,6 +17,15 @@ export async function getTaskById(id) {
     // TODO: If not, throw an error
 
     // TODO: If it does, return the task
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: { subtask: true},
+
+    });
+    if (!task ){
+      throw new Error ("Task Not Found")
+    }
+    return task;
     
 
   } catch (error) {
@@ -33,6 +42,25 @@ export async function createTask(taskData) {
 
 
       // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data in "taskData.subtasks". Return the created task and it's subtasks using the include option.
+      const task = await prisma.task.create({
+        data: {
+          title: taskData.title,
+        description: taskData.description,
+        status: status,
+        priority: taskData.priority,
+        dueDate,
+        assignedTo: taskData.priority,
+        dueDate:  taskData.dueDate? new Date(taskData.dueDate) : null,
+        subtasks: {
+          create: taskData.subtask || [],
+        }
+        },
+      
+
+        include: {subtask : true },
+      });
+      return task;
+
     
 
   } catch (error) {
