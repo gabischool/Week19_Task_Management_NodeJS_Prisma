@@ -33,6 +33,7 @@ router.get("/tasks", async (req, res) => {
 // GET /api/tasks/:id - Get task by ID
 // :id is a route parameter - it captures the value from the URL
 // Example: /api/tasks/1 will set req.params.id = "1"
+//comment1
 router.get("/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params; // Extract the ID from the URL
