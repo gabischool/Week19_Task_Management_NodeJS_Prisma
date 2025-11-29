@@ -1,3 +1,4 @@
+import { TaskStatus } from "@prisma/client";
 import prisma from "../lib/prisma.js";
 
 // Simpler approach - just get all tasks
@@ -6,17 +7,28 @@ export async function getAllTasks() {
     include: { subtasks: true },
     orderBy: { createdAt: "desc" },
   });
+  
 }
 
 // Get task by ID
 export async function getTaskById(id) {
   try {
 
-    // TODO: Check if task exists
+     // TODO: Check if task exists
+     const getOneTask = await prisma.task.findUnique({
+      where: { id },
+      include: { subtasks: true},
+      orderBy: { createdAt: "dec"}
+     
+     })
 
     // TODO: If not, throw an error
+      if (!getOneTask) {
+        throw error
+      }
 
     // TODO: If it does, return the task
+      return getOneTask;
     
 
   } catch (error) {
@@ -32,9 +44,31 @@ export async function createTask(taskData) {
       taskData.status === "in-progress" ? "in_progress" : taskData.status;
 
 
-      // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data in "taskData.subtasks". Return the created task and it's subtasks using the include option.
-    
-
+      // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data in "taskData.subtasks".  Return the created task and it's subtasks using the include option.
+      const newTask = await prisma.task.create({
+        data: {
+          title: taskData.title,
+          description: taskData.description,
+          status:   taskData.status,
+          priority: taskData.priority,
+          dueDate:  taskData.dueDate,
+          assignedTo: taskData.assignedTo,
+      
+          subtasks: {
+            create: [
+              {
+                title: taskData.subtaskData.title,
+                description: taskData.subtaskData.description,
+                completed: taskData.subtaskData.completed
+              }
+            ]
+          }
+        },
+        include: {
+          subtasks: true
+        }
+      });
+       return newTask;
   } catch (error) {
     throw new Error(`Error creating task: ${error.message}`);
   }
