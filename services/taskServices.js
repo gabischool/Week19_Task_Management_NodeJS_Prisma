@@ -1,3 +1,4 @@
+import { Priority } from "@prisma/client";
 import prisma from "../lib/prisma.js";
 
 // Simpler approach - just get all tasks
@@ -14,9 +15,19 @@ export async function getTaskById(id) {
 
     // TODO: Check if task exists
 
+    const gettask = await prisma.task.findUnique({
+      where: {id}
+    })
+    
+ 
+
     // TODO: If not, throw an error
+    if(!gettask){
+      throw new Error("task not found")
+    }
 
     // TODO: If it does, return the task
+    return gettask
     
 
   } catch (error) {
@@ -34,6 +45,35 @@ export async function createTask(taskData) {
 
       // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data in "taskData.subtasks". Return the created task and it's subtasks using the include option.
     
+      const newtask = await prisma.task.create({
+        data: {
+          title: taskData.title,
+          description: taskData.description,
+          status: status,
+          priority: taskData.priority,
+          dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
+          assignedto: taskData.assignedto,
+
+        
+         subtasks: {
+          create: taskData.subtasks?.map((sub) => ({
+            title: sub.title,
+            description: sub.description,
+            completed: sub.completed ?? false,
+          })),
+        },
+      
+        
+        createdAt: taskData.createdAt,
+        updateAt: taskData.updateAt
+
+        },
+        
+      
+
+        
+      })
+      return newtask
 
   } catch (error) {
     throw new Error(`Error creating task: ${error.message}`);
