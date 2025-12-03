@@ -49,23 +49,23 @@ Each task has the following structure:
 
 ```json
 {
-  "id": "cmdsdprqh0000gtd47ipm0qrx",
+  
   "title": "Task Title",
   "description": "Task description",
-  "status": "pending|in-progress|completed|cancelled",
-  "priority": "low|medium|high|urgent",
+  "status": "pending",
+  "priority": "low",
   "dueDate": "2024-01-15",
   "assignedTo": "John Doe",
   "subtasks": [
     {
-      "id": "cmdsdq3z50002gtd4okxc927x",
+      
       "title": "Subtask Title",
       "description": "Subtask description",
       "completed": false
     }
   ],
-  "createdAt": "2024-01-01T10:00:00.000Z",
-  "updatedAt": "2024-01-01T10:00:00.000Z"
+  
+
 }
 ```
 
