@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // Waxaa isticmaalaya App-ka (Connection Pool)
+  directUrl = env("DIRECT_URL")   // Waxaa isticmaalaya Prisma Migrations
 }
 
 model Task {
@@ -25,18 +26,29 @@ model Task {
   @@map("tasks")
 }
 
-// TODO: Create a Subtask model that has a (title, description, completed, taskId, task, createdAt, updatedAt) where taskId is a foreign key to the Task model and task is a relation to the Task model
-
 model Subtask {
-  
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  completed   Boolean  @default(false)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("subtasks")
 }
 
-// TODO: Create an enum for the status of the task with the following values (pending, in_progress, completed, cancelled)
 enum TaskStatus {
-  
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
 
-// Create an enum for the priority of the task with the following values (low, medium, high, urgent)
 enum Priority {
-  
-} 
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
