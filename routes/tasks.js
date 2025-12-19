@@ -9,126 +9,69 @@ import {
 
 const router = express.Router();
 
-// GET /api/tasks - Get all tasks
-// This route handles GET requests to /api/tasks
-// req = request object (contains data sent by client)
-// res = response object (used to send data back to client)
-router.get("/tasks", async (req, res) => {
+/**
+ * GET /api/tasks
+ */
+router.get("/tasks", async (req, res, next) => {
   try {
     const tasks = await getAllTasks();
-
-    res.json({
-      success: true,
-      count: tasks.length,
-      data: tasks,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.json({ success: true, data: tasks });
+  } catch (err) {
+    next(err);
   }
 });
 
-// GET /api/tasks/:id - Get task by ID
-// :id is a route parameter - it captures the value from the URL
-// Example: /api/tasks/1 will set req.params.id = "1"
-router.get("/tasks/:id", async (req, res) => {
+/**
+ * GET /api/tasks/:id
+ */
+router.get("/tasks/:id", async (req, res, next) => {
   try {
-    const { id } = req.params; // Extract the ID from the URL
-    const task = await getTaskById(id);
-
+    const task = await getTaskById(req.params.id);
     if (!task) {
-      return res.status(404).json({
-        success: false,
-        error: "Task not found",
-      }); // 404 = Not Found
+      return res
+        .status(404)
+        .json({ success: false, message: "Task not found" });
     }
-
-    res.json({
-      success: true,
-      data: task,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    }); // 500 = Server Error
+    res.json({ success: true, data: task });
+  } catch (err) {
+    next(err);
   }
 });
 
-// POST /api/tasks - Create new task
-// POST requests are used to create new resources
-// req.body contains the data sent in the request body
-router.post("/tasks", async (req, res) => {
+/**
+ * POST /api/tasks
+ */
+router.post("/tasks", async (req, res, next) => {
   try {
-    const taskData = req.body;
-    const newTask = await createTask(taskData);
-
-    res.status(201).json({
-      success: true,
-      data: newTask,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message,
-    }); // 400 = Bad Request for validation errors
+    const task = await createTask(req.body);
+    res.status(201).json({ success: true, data: task });
+  } catch (err) {
+    next(err);
   }
 });
 
-// PUT /api/tasks/:id - Update task
-// PUT requests are used to update existing resources
-// The entire resource is replaced with the new data
-router.put("/tasks/:id", async (req, res) => {
+/**
+ * PUT /api/tasks/:id
+ */
+router.put("/tasks/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const updateData = req.body;
-    const updatedTask = await updateTask(id, updateData);
-
-    res.json({
-      success: true,
-      data: updatedTask,
-    });
-  } catch (error) {
-    if (error.message === "Task not found") {
-      res.status(404).json({
-        success: false,
-        error: error.message,
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-      });
-    }
+    const task = await updateTask(req.params.id, req.body);
+    res.json({ success: true, data: task });
+  } catch (err) {
+    next(err);
   }
 });
 
-// DELETE /api/tasks/:id - Delete task
-// DELETE requests are used to remove resources
-router.delete("/tasks/:id", async (req, res) => {
+/**
+ * DELETE /api/tasks/:id
+ */
+router.delete("/tasks/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const deletedTask = await deleteTask(id);
-
-    res.json({
-      success: true,
-      data: deletedTask,
-    });
-  } catch (error) {
-    if (error.message === "Task not found") {
-      res.status(404).json({
-        success: false,
-        error: error.message,
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+    await deleteTask(req.params.id);
+    res.json({ success: true, message: "Task deleted successfully" });
+  } catch (err) {
+    next(err);
   }
 });
 
-export default router;
+export default router; // ✅ THIS LINE FIXES THE ERROR
