@@ -1,6 +1,8 @@
+
+
 import prisma from "../lib/prisma.js";
 
-// Simpler approach - just get all tasks
+// Get all tasks
 export async function getAllTasks() {
   return await prisma.task.findMany({
     include: { subtasks: true },
@@ -11,14 +13,21 @@ export async function getAllTasks() {
 // Get task by ID
 export async function getTaskById(id) {
   try {
+    // Check if task exists
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: {
+        subtasks: true,
+      },
+    });
 
-    // TODO: Check if task exists
+    // If not, throw an error
+    if (!task) {
+      throw new Error("Task not found");
+    }
 
-    // TODO: If not, throw an error
-
-    // TODO: If it does, return the task
-    
-
+    // If it does, return the task
+    return task;
   } catch (error) {
     throw new Error(`Error retrieving task: ${error.message}`);
   }
@@ -29,12 +38,38 @@ export async function createTask(taskData) {
   try {
     // Convert status from kebab-case to snake_case for Prisma enum
     const status =
-      taskData.status === "in-progress" ? "in_progress" : taskData.status;
+      taskData.status === "in-progress"
+        ? "in_progress"
+        : taskData.status;
 
+    const task = await prisma.task.create({
+      data: {
+        title: taskData.title,
+        description: taskData.description,
+        status,
+        priority: taskData.priority,
+        dueDate: taskData.dueDate
+          ? new Date(taskData.dueDate)
+          : null,
+        assignedTo: taskData.assignedTo,
 
-      // TODO: Create the new task where all the task data is in "taskData", also create the subtasks with the data in "taskData.subtasks". Return the created task and it's subtasks using the include option.
-    
+        // Create subtasks if provided
+        subtasks: taskData.subtasks
+          ? {
+              create: taskData.subtasks.map((subtask) => ({
+                title: subtask.title,
+                description: subtask.description,
+                completed: subtask.completed || false,
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        subtasks: true,
+      },
+    });
 
+    return task;
   } catch (error) {
     throw new Error(`Error creating task: ${error.message}`);
   }
@@ -53,7 +88,7 @@ export async function updateTask(id, updateData) {
     }
 
     // Convert status from kebab-case to snake_case for Prisma enum
-    if (updateData.status && updateData.status === "in-progress") {
+    if (updateData.status === "in-progress") {
       updateData.status = "in_progress";
     }
 
@@ -91,7 +126,7 @@ export async function deleteTask(id) {
       throw new Error("Task not found");
     }
 
-    // Delete the task (subtasks will be deleted automatically due to cascade)
+    // Delete the task (subtasks are deleted via cascade)
     await prisma.task.delete({
       where: { id },
     });
@@ -110,7 +145,7 @@ export async function createSubtask(taskId, subtaskData) {
         title: subtaskData.title,
         description: subtaskData.description,
         completed: subtaskData.completed || false,
-        taskId: taskId,
+        taskId,
       },
     });
 
