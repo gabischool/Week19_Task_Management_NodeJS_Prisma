@@ -3,6 +3,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 
 // Import routes
+import userRoutes from "./routes/userRoute.js";
 import taskRoutes from "./routes/tasks.js";
 
 // Initialize Express app
@@ -16,6 +17,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 
 // Mount API routes
+app.use("/api/users", userRoutes);
 app.use("/api", taskRoutes);
 
 // Error handling middleware

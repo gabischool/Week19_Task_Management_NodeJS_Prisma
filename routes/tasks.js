@@ -1,133 +1,85 @@
 import express from "express";
-import {
-  getAllTasks,
-  getTaskById,
-  createTask,
-  updateTask,
-  deleteTask,
-} from "../services/taskServices.js";
+import prisma from "../lib/prisma.js";
 
 const router = express.Router();
 
+// findMany, findUnique, create, update, delete
+
 // GET /api/tasks - Get all tasks
-// This route handles GET requests to /api/tasks
-// req = request object (contains data sent by client)
-// res = response object (used to send data back to client)
 router.get("/tasks", async (req, res) => {
   try {
-    const tasks = await getAllTasks();
+    const tasks = await prisma.task.findMany({
+      include: { user: true },
+      orderBy: { id: "asc" },
+    });
 
-    res.json({
-      success: true,
-      count: tasks.length,
-      data: tasks,
-    });
+    res.json(tasks);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// GET /api/tasks/:id - Get task by ID
-// :id is a route parameter - it captures the value from the URL
-// Example: /api/tasks/1 will set req.params.id = "1"
+// GET /api/tasks/:id - Get one task
+// Example: /api/tasks/1 sets req.params.id to "1"
 router.get("/tasks/:id", async (req, res) => {
   try {
-    const { id } = req.params; // Extract the ID from the URL
-    const task = await getTaskById(id);
+    // The id from the URL is a string, so we turn it into a number
+    const { id } = req.params;
+
+    const task = await prisma.task.findUnique({
+      where: { id: Number(id) },
+      include: { user: true },
+    });
 
     if (!task) {
-      return res.status(404).json({
-        success: false,
-        error: "Task not found",
-      }); // 404 = Not Found
+      return res.status(404).json({ error: "Task not found" });
     }
 
-    res.json({
-      success: true,
-      data: task,
-    });
+    res.json(task);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    }); // 500 = Server Error
+    res.status(500).json({ error: error.message });
   }
 });
 
-// POST /api/tasks - Create new task
-// POST requests are used to create new resources
-// req.body contains the data sent in the request body
+// POST /api/tasks - Create a task
 router.post("/tasks", async (req, res) => {
   try {
-    const taskData = req.body;
-    const newTask = await createTask(taskData);
+    // TODO: Get title, description, completed, and userId.
+    // TODO: Make sure the required fields are present.
+    // TODO: Use Prisma to create the task and return it.
 
-    res.status(201).json({
-      success: true,
-      data: newTask,
-    });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message,
-    }); // 400 = Bad Request for validation errors
+    res.status(400).json({ error: error.message });
   }
 });
 
-// PUT /api/tasks/:id - Update task
-// PUT requests are used to update existing resources
-// The entire resource is replaced with the new data
+// PUT /api/tasks/:id - Update a task
 router.put("/tasks/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const updateData = req.body;
-    const updatedTask = await updateTask(id, updateData);
+    // TODO: Get the id, title, description, and completed.
+    // TODO: Use Prisma to update the task and return it.
 
-    res.json({
-      success: true,
-      data: updatedTask,
-    });
   } catch (error) {
-    if (error.message === "Task not found") {
-      res.status(404).json({
-        success: false,
-        error: error.message,
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-      });
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Task not found" });
     }
+
+    res.status(400).json({ error: error.message });
   }
 });
 
-// DELETE /api/tasks/:id - Delete task
-// DELETE requests are used to remove resources
+// DELETE /api/tasks/:id - Delete a task
 router.delete("/tasks/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const deletedTask = await deleteTask(id);
+    // TODO: Get the id.
+    // TODO: Use Prisma to delete the task and return it.
 
-    res.json({
-      success: true,
-      data: deletedTask,
-    });
   } catch (error) {
-    if (error.message === "Task not found") {
-      res.status(404).json({
-        success: false,
-        error: error.message,
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Task not found" });
     }
+
+    res.status(500).json({ error: error.message });
   }
 });
 
