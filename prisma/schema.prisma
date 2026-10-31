@@ -1,5 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 
 generator client {
   provider = "prisma-client-js"
@@ -10,14 +9,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// TODO: Add the fields (id, name, email, createdAt, updatedAt, tasks)
-
 model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tasks     Task[]
+
   @@map("users")
 }
 
-// TODO: Add the fields (id, title, description, completed, userId, user, createdAt, updatedAt)
-
 model Task {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  completed   Boolean  @default(false)
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   @@map("tasks")
 }
