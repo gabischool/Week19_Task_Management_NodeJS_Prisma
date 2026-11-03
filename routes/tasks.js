@@ -95,8 +95,7 @@ router.put("/tasks/:id", async (req, res) => {
 // DELETE /api/tasks/:id - Delete a task
 router.delete("/tasks/:id", async (req, res) => {
   try {
-    // TODO: Get the id.
-    // TODO: Use Prisma to delete the task and return it.
+    
 
     const {id } = req.params;
     const deletTask = await prisma.task.delete({
