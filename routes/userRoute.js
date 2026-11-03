@@ -21,8 +21,15 @@ router.get("/", async (req, res) => {
 // GET /api/users/:id/tasks - Get all tasks for one user
 router.get("/:id/tasks", async (req, res) => {
   try {
-    // TODO: Get the id.
-    // TODO: Use Prisma to get all tasks for that user and return them.
+   const { id } = req.params;
+
+   const tasks = await prisma.task.findMany({
+    where:  { userId: Number (id) },
+    orderBy: { id: "asc"}
+
+   });
+
+   res.json(tasks);
 
   } catch (error) {
     res.status(500).json({ error: error.message });
