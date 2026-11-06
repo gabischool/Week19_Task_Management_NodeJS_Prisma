@@ -19,10 +19,16 @@ router.get("/", async (req, res) => {
 });
 
 // GET /api/users/:id/tasks - Get all tasks for one user
-router.get("/:id/tasks", async (req, res) => {
-  try {
     // TODO: Get the id.
     // TODO: Use Prisma to get all tasks for that user and return them.
+router.get("/:id/tasks", async (req, res) => {
+  try {
+const {id}= req.params;
+const tasks = await prisma.task.findMany({
+  where: {userId: Number(id) }
+});
+  
+  return res.json (tasks)
 
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -33,7 +39,6 @@ router.get("/:id/tasks", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
     const user = await prisma.user.findUnique({
       where: { id: Number(id) },
     });
@@ -53,7 +58,7 @@ router.post("/", async (req, res) => {
   try {
     // Step 1: Get the information of the user
     const { name, email } = req.body;
-
+    
     // Step 2: Verify the required information
     if (!name || !email) {
       return res.status(400).json({ error: "Missing Required fields" });

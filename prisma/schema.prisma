@@ -7,17 +7,33 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url   = env("DATABASE_URL")
 }
 
 // TODO: Add the fields (id, name, email, createdAt, updatedAt, tasks)
 
 model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  tasks     Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("users")
 }
 
 // TODO: Add the fields (id, title, description, completed, userId, user, createdAt, updatedAt)
 
 model Task {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completed   Boolean  @default(false)
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete : Cascade)
+
   @@map("tasks")
 }
